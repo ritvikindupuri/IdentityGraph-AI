@@ -1,0 +1,147 @@
+# IdentityGraph AI — Workflow Testing Scenarios
+
+The following scenarios are intentionally designed to test the full orchestration, reasoning, detection engineering, attack-path analysis, operational risk assessment, and remediation capabilities of the IdentityGraph AI workflow.
+
+These are synthetic enterprise identity-security investigation scenarios intended to validate:
+
+* multi-agent orchestration
+* identity-threat reasoning
+* Kerberos abuse analysis
+* delegated permission investigation
+* ACL exposure detection
+* attack-path correlation
+* operational remediation workflows
+* SIEM / KQL detection generation
+* enterprise SOC reporting quality
+
+Each scenario includes:
+
+1. Security Scenario
+2. Optional Supporting Evidence / Notes
+
+The workflow should infer:
+
+* environment type
+* investigation category
+* severity
+* confidence
+* likely ATT&CK mappings
+* operational impact
+* remediation priorities
+* investigation progression
+
+without requiring additional user-selected inputs.
+
+---
+
+# Scenario 1 — High-Confidence Kerberoasting & Delegated ACL Abuse
+
+## Security Scenario
+
+```text
+A spike in Event ID 4769 Kerberos TGS requests was detected from workstation WKSTN-042 associated with standard domain user j.doe. The requests targeted multiple SPN-bearing service accounts and used RC4 encryption (0x17), which is not standard within the environment. Shortly afterward, Event ID 4624 Type 3 logons involving service account svc_sql_reporting were observed originating from the same workstation subnet outside approved maintenance windows.
+
+Additional telemetry identified PowerShell Event ID 4104 activity containing Get-ADUser, Get-ADGroupMember, and LDAP enumeration commands consistent with SharpHound-style reconnaissance behavior. Security Event ID 5136 later revealed modifications to ntSecurityDescriptor attributes on a Tier-1 Organizational Unit containing privileged administrative groups.
+
+Directory analysis suggests svc_sql_reporting may possess inherited GenericAll or WriteDacl permissions through nested group relationships. The environment recently completed a partial migration to Hybrid Active Directory and several legacy applications still rely on RC4-compatible Kerberos authentication.
+
+The investigation objective is to determine whether the activity reflects a coordinated identity-based privilege escalation attempt leveraging Kerberoasting and delegated Active Directory permissions.
+```
+
+## Optional Supporting Evidence / Notes
+
+```text
+Observed Indicators:
+- Event ID 4769 spike involving RC4 encryption
+- Event ID 4624 Type 3 logons
+- PowerShell 4104 LDAP enumeration
+- Event ID 5136 ntSecurityDescriptor modification
+- Service account: svc_sql_reporting
+- Source host: WKSTN-042
+
+Operational Notes:
+- Tier-1 infrastructure contains critical application authentication groups
+- Production SQL services depend on Kerberos service accounts
+- Recent Hybrid AD synchronization changes were deployed
+- SOC requests operational risk assessment before containment actions
+```
+
+---
+
+# Scenario 2 — Possible Shadow Admin Exposure via Delegated Rights
+
+## Security Scenario
+
+```text
+An internal audit identified unusual Active Directory permission inheritance affecting several service accounts within the Infrastructure OU. Security analysts observed that service account svc_backup_ops appears to inherit elevated delegated rights through nested administrative groups that were not documented during previous IAM reviews.
+
+Over the last 48 hours, multiple Event ID 4624 Type 10 remote logons associated with svc_backup_ops were observed on management servers outside standard backup windows. PowerShell Event ID 4104 logs indicate Active Directory enumeration activity involving ACL inspection and recursive group membership discovery.
+
+Additional telemetry from the SIEM identified Event ID 4728 additions to security-enabled groups and Event ID 5136 modifications involving AD object permissions. Analysts are attempting to determine whether the activity represents legitimate administrative drift, misconfigured delegated access, or a potential identity-based persistence mechanism.
+
+The environment operates within a Hybrid Active Directory architecture supporting legacy service-account workflows and partially modernized authentication controls.
+```
+
+## Optional Supporting Evidence / Notes
+
+```text
+Observed Systems:
+- MGMT-SRV-02
+- MGMT-SRV-04
+- Tier-1 Infrastructure OU
+
+Relevant Accounts:
+- svc_backup_ops
+- infra_sync_agent
+
+Observed Behaviors:
+- ACL enumeration
+- Recursive group mapping
+- Remote administrative logons
+- Delegated permission inheritance
+
+Analyst Concerns:
+- Potential Shadow Admin exposure
+- Excessive delegated rights
+- Privilege persistence through nested groups
+```
+
+---
+
+# Scenario 3 — Hybrid AD Identity Reconnaissance Investigation
+
+## Security Scenario
+
+```text
+The SOC detected abnormal authentication and enumeration activity originating from workstation ENG-WKS-119 shortly after a successful VPN authentication from a foreign IP address associated with contractor account m.thomas. Shortly after authentication, Event ID 4769 activity involving multiple SPN-bearing accounts increased significantly, including requests using RC4 Kerberos encryption.
+
+PowerShell Script Block Logging (Event ID 4104) captured execution of Active Directory discovery commands involving Get-ADUser, Get-ADComputer, Get-ADGroupMember, and LDAP filters targeting privileged administrative groups. Security telemetry also identified Event ID 4662 operations against Active Directory objects and multiple Event ID 4624 Type 3 network logons involving service accounts not normally accessed by contractor systems.
+
+No malware execution has been confirmed at this stage. However, analysts suspect the activity may represent reconnaissance and identity-path discovery preceding privilege escalation attempts through delegated Active Directory permissions or Kerberos ticket abuse.
+
+The environment is a Hybrid AD deployment integrated with Azure AD synchronization and contains legacy service accounts supporting internal application infrastructure.
+```
+
+## Optional Supporting Evidence / Notes
+
+```text
+Observed Indicators:
+- VPN login anomaly
+- Event ID 4769 spike
+- RC4 Kerberos requests
+- PowerShell Event ID 4104
+- Event ID 4662 AD object access
+- Lateral authentication behavior
+
+Potential Investigation Focus:
+- Kerberoasting exposure
+- Identity-path mapping
+- Delegated permission abuse
+- Service-account misuse
+- AD reconnaissance activity
+
+Operational Considerations:
+- Contractor accounts have limited administrative access
+- Tier-1 systems host production application infrastructure
+- Legacy Kerberos compatibility remains partially enabled
+```
